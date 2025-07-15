@@ -1,0 +1,9 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fdfaf6; /* Light cream background */
+    color: #331a00; /* Dark brown text */
+}
+/* Custom scrollbar for a more refined look */
+::-webkit-scrollbar {
+    width: 0px;
+}
