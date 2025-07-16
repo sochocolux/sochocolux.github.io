@@ -10,8 +10,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #fdfaf6; /* Light cream background */
-            color: #331a00; /* Dark brown text */
+            background-color: #fdfaf6;
+            color: #331a00;
         }
 
         .header-font {
@@ -33,6 +33,10 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #6f360f;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
 
         .modal-overlay {
@@ -63,8 +67,8 @@
         <nav class="container mx-auto flex justify-between items-center">
             <a href="index.html" id="headerName" class="text-3xl font-bold text-amber-900 tracking-wide header-font">So_Chocolux</a>
             <div class="hidden md:flex space-x-8" id="links">
-                <a href="index.html" class="text-lg font-medium text-amber-800 hover:text-amber-50 transition duration-300">Home</a>
-                <a href="products.html" class="text-lg font-medium text-amber-800 hover:text-amber-50 transition duration-300">Collection</a>
+                <button href="index.html" class="text-lg font-medium text-amber-800 hover:text-amber-50 transition duration-300">Home</button>
+                <button href="products.html" class="text-lg font-medium text-amber-800 hover:text-amber-50 transition duration-300">Collection</button>
                 <button id="show-admin-login-btn" class="text-lg font-medium text-amber-800 hover:text-amber-50 transition duration-300">
                     Admin Login
                 </button>
@@ -72,7 +76,6 @@
                     +
                 </button>
             </div>
-            <!-- Mobile Menu Button -->
             <button id="mobile-menu-button" class="md:hidden text-amber-800 focus:outline-none">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -102,7 +105,7 @@
 
             <!-- Add New Chocolate Form Overlay -->
             <div id="add-chocolate-modal-overlay" class="modal-overlay hidden">
-                <div id="add-chocolate-form-content" class="modal-content bg-white" style="width: 600px;">
+                <div id="add-chocolate-form-content" class="modal-content bg-white overflow-y-scroll h-[700px] no-scrollbar" style="width: 600px;">
                     <h3 class="text-2xl font-bold text-amber-900 mb-6 text-center">Add New Chocolate</h3>
                     <form id="add-chocolate-form" class="space-y-4">
                         <div>
@@ -124,6 +127,10 @@
                                 <input type="file" id="upload-image" accept="image/*" class="ml-2 hidden">
                                 <button id="upload-image-button" class="bg-gray-300 text-amber-900 mx-2 py-1 rounded-lg font-semibold hover:bg-gray-400 transition duration-300" type="button" onclick="document.getElementById('upload-image').click();">Choose File</button>
                             </div>
+                        </div>
+                        <div>
+                            <label for="chocolate-collection" class="block text-left text-amber-900 text-lg font-medium mb-2">Collection name</label>
+                            <input id="chocolate-collection" name="Collection" class="w-full px-4 py-2 border border-amber-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 text-amber-900" placeholder="Please enter a name..."> 
                         </div>
                         <button type="submit" class="w-full bg-amber-700 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-800 transition duration-300 shadow-md">
                             Add Chocolate
@@ -285,9 +292,9 @@
             if (enteredPassword === ADMIN_PASSWORD) {
                 isAdminLoggedIn = true;
                 hideSignInModal();
-                // Show the plus button when admin logs in
+                showAdminLoginBtn.classList.add('hidden');
                 showAddChocolateModalBtn.classList.remove('hidden'); 
-                setupRealtimeListener(); // Re-fetch chocolates to ensure delete buttons are correctly added
+                setupRealtimeListener();
             } else {
                 signInErrorMessage.classList.remove('hidden');
             }
@@ -482,12 +489,15 @@
                         Delete
                     </button>` : '';
 
+                const collection = chocolate.collectionAlbum !== undefined ? `<h5 class="text-xl font-semibold text-amber-900 mb-2">${chocolate.collectionAlbum}</h3>` : ""
+
                 const chocolateCard = `
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 flex flex-col" data-id="${chocolate.id}">
                         <img src="${chocolate.image || 'https://placehold.co/400x300/8B4513/FFFFFF?text=Chocolate'}" alt="${chocolate.name}" class="w-full h-64 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x300/8B4513/FFFFFF?text=No+Image';">
                         <div class="p-6 flex-grow flex flex-col justify-between">
                             <div>
                                 <h3 class="text-2xl font-semibold text-amber-900 mb-2">${chocolate.name}</h3>
+                                ${collection}
                                 <p class="text-amber-800 mb-4">${chocolate.description}</p>
                             </div>
                             <div>
@@ -536,22 +546,20 @@
             const description = document.getElementById('chocolate-description').value;
             const sizes = document.getElementById('chocolate-sizes').value;
             const image = document.getElementById('chocolate-image').value;
+            const collectionAlbum = document.getElementById('chocolate-collection').value;
 
             try {
-                // Changed collection path to 'chocolates' for consistent local use
                 await addDoc(collection(db, `chocolates`), {
                     name,
                     description,
                     sizes,
                     image,
-                    createdAt: new Date(),
-                    createdBy: currentUserId
+                    collectionAlbum,
                 });
-                addChocolateForm.reset(); // Clear form
-                addChocolateModalOverlay.classList.add('hidden'); // Hide the modal after submission
+                addChocolateForm.reset();
+                addChocolateModalOverlay.classList.add('hidden');
             } catch (error) {
                 console.error("Error adding chocolate:", error);
-                // In a real app, you might show an error message to the user
             }
         });
 
